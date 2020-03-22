@@ -1,18 +1,21 @@
 import numpy as np
 
 #We set seed for get fixed random numbers
-np.random.seed(100)
+np.random.seed(42)
 
 #N is the large of the vector and K the number of explicative variables, additionaly
 # we have n-dimentional intercept vector of ones. Ideally, we should check if
 #x matrix columns are linearly indepent. 
-N = 100
+#Check what's happens with k =! 2
+N = 10000
 K = 2
 
+#If we allow other sources, the script must be able tocheck sizes and data types
 y = np.random.randint(-100, high=100, size=(N, 1))
 x = np.random.randint(-100, high=100, size=(N, K))
 
-def add_intercept (x, N):
+def add_intercept (x):
+    '''Appends a column of ones as first column of matrix X '''
     intercept = np.array(np.ones((N, 1)))
     xin = np.append(intercept, x, axis=1)
     return xin
@@ -22,15 +25,11 @@ def b1_ols (x, y):
     The specificated model is y = xb + u1 with intercept 
     if x'x is invertible, te solution for beta_ols(Kx1) is [(x'x)^-1]x'y
     '''
-    xin = add_intercept(x, N)
+    xin = add_intercept(x)
     xint = xin.T
     beta_ols = np.dot(np.dot(np.linalg.inv(np.dot(xint, xin)), xint), y)
     return beta_ols[1,]
 
-b1_ols = b1_ols(x, y)
-
-   
-
 def two_stages(uncorr_i, interest_b):
     '''
     Returns b1ts, given y and x.
@@ -39,9 +38,11 @@ def two_stages(uncorr_i, interest_b):
     x1* is the part of y that has 0 correlation with x2.
     For estimating this isolated effect, we compute the ortogonal projection of 
     each variable and x2.
+    uncorr_i = control variable index
+    interest_b = interest variable index
     '''
     def var_star(uncorr_i, var_star_i):
-        var_star_i= 1
+        '''computes orthogonal projection of var_star_i onto uncorr_i'''
         var_star = y if var_star_i == 'y' else x[:, var_star_i-1].reshape(-1,1)
         uncorr = x[:, uncorr_i-1].reshape(-1,1)
         uncorr_t = uncorr.T
@@ -49,37 +50,20 @@ def two_stages(uncorr_i, interest_b):
         mx2 = np.identity(N) - px2
         return np.dot(mx2, var_star)
     y_star = var_star(uncorr_i, 'y')
-    interest_var = x[:, interest_b-1].reshape(-1,1)
-    x_star = var_star(uncorr_i, interest_var)
-    b1_two_stages = b1_ols(x_star, y_star)
-    return b1_two_stages
+    x_star = var_star(uncorr_i, interest_b) 
+    b_two_stages = b1_ols(x_star, y_star)
+    return b_two_stages
    
-b1_two_stages = two_stages(1,2)
+b1 = b1_ols(x, y)    
+b1_two_stages = two_stages(2,1)
 
-def two_stages(uncorr_i, interest_b):
-    '''
-    Returns b1ts, given y and x.
-    The specificated model is y* = x1*b1 + u2
-    Where y* is the part of y that it's uncorrelated with x2. Analogously, 
-    x1* is the part of y that has 0 correlation with x2.
-    For estimating this isolated effect, we compute the ortogonal projection of 
-    each variable and x2.
-    '''
-    def var_star(uncorr_i, var_star_i):
-        var_star_i= 1
-        var_star = y if var_star_i == 'y' else x[:, var_star_i-1].reshape(-1,1)
-        uncorr = x[:, uncorr_i-1].reshape(-1,1)
-        uncorr_t = uncorr.T
-        px2 = np.dot(uncorr, np.dot(np.linalg.inv(np.dot(uncorr_t, uncorr)), uncorr_t))
-        mx2 = np.identity(N) - px2
-        return np.dot(mx2, var_star)
-    y_star = var_star(uncorr_i, 'y')
-    interest_var = x[:, interest_b-1].reshape(-1,1)
-    x_star = var_star(uncorr_i, interest_var)
-    b1_two_stages = b1_ols(x_star, y_star)
-    return b1_two_stages
-   
-b1_two_stages = two_stages(1,2)
+test = b1-b1_two_stages
+print(test)
     
     
-
+    
+    
+    
+    
+    
+ 
