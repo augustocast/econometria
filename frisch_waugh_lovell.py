@@ -65,7 +65,7 @@ b1 = b1_ols(x, y)
 b1_two_stages = two_stages(2,1)
 
 
-test = b1-b1_two_stages
+test = b1/b1_two_stages
 print(test)
     
     
