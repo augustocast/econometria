@@ -33,7 +33,7 @@ def ortogonal_matrix(uncorr_i):
 def var_star(uncorr_i, var_star_i):
     '''computes orthogonal projection of var_star_i onto uncorr_i
     '''
-    var_star = y if var_star_i == 'y' else x[:, var_star_i-1].reshape(-1,1)
+    var_star = x[:, var_star_i-1].reshape(-1,1)
     mxi = ortogonal_matrix(uncorr_i)
     return np.dot(mxi, var_star)
 
@@ -50,15 +50,13 @@ def b1_ols (x, y):
 def two_stages(uncorr_i, interest_b):
     '''
     Returns b1ts, given y and x.
-    The specificated model is y* = x1*b1 + u2
-    Where y* is the part of y that it's uncorrelated with x2. Analogously, 
-    x1* is the part of y that has 0 correlation with x2.
+    The specificated model is y = x1*b1 + u2
+    Where x1* is the part of y that has 0 correlation with x2.
     uncorr_i = control variable index
     interest_b = interest variable index
     '''
-    y_star = var_star(uncorr_i, 'y')
     x_star = var_star(uncorr_i, interest_b) 
-    b_two_stages = b1_ols(x_star, y_star)
+    b_two_stages = b1_ols(x_star, y)
     return b_two_stages
    
 b1 = b1_ols(x, y)    
