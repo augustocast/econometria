@@ -1,3 +1,4 @@
+# Configuración ----
 #install.packages('xlsx')
 #install.packages('corrplot')
 #install.packages('ggplot2')
@@ -5,7 +6,7 @@
 library(xlsx)
 library(ggplot2)
 library(readxl)
-setwd('/home/augusto/udesa/econometria')
+setwd('/home/augusto/udesa/econometria/tp1')
 # Ejercicio 1 ----
 # 1.
 
@@ -66,30 +67,90 @@ write.xlsx(coefficients, 'primera_estimacion.xlsx', row.names = FALSE)
 #4.
 
 #Importamos el archivo generado anteriormente
-primera_estimacion <- read_excel('primera_estimacion.xlsx')
+df <- read_excel('primera_estimacion.xlsx')
 
 #Graficamos b1 contra b2 y b1 contra b3 (hay qu tunearle los índices)
 
 #hay dos versiones
-#plot(primera_estimacion$b1, primera_estimacion$b2)
-#plot(primera_estimacion$b1, primera_estimacion$b3)
+#plot(df$b1, df$b2)
+#plot(df$b1, df$b3)
 
-ggplot(primera_estimacion,
-       aes(x = primera_estimacion$b1, y = primera_estimacion$b2)) + geom_point()
-ggplot(primera_estimacion,
-       aes(x = primera_estimacion$b1, y = primera_estimacion$b3)) + geom_point()
+ggplot(df,
+       aes(x = df$b1, y = df$b2)) + geom_point()
+ggplot(df,
+       aes(x = df$b1, y = df$b3)) + geom_point()
 
 #Son buenas las estimaciones?
 
 #5.
-x2 <- scale(matrix(rnorm(100), ncol = 1))
-xs <- cbind(scale(x1), x2)
-c1 <- var(xs)
-chol1 <- solve(chol(c1))
-newx <- xs
-newc <- matrix(c(1 , 0.987,
-                 0.987, 1), ncol = 2)
-eigen(newc)
-chol2 <- chol(newc)
-xm2 <- newx %* % chol2 * sd(x1) + mean(x1)
-x2 <- xm2[, 2]
+x2_corr <- function(x1) {
+  #'La función genera x2, altamente correlacionada con x1
+  x2 <- scale(matrix(rnorm(100), ncol = 1))
+  xs <- cbind(scale(x1), x2)
+  c1 <- var(xs)
+  chol1 <- solve(chol(c1))
+  newx <- xs
+  newc <- matrix(c(1 , 0.987,
+                   0.987, 1), ncol = 2)
+  eigen(newc)
+  chol2 <- chol(newc)
+  xm2 <- newx %*% chol2 * sd(x1) + mean(x1)
+  x2 <- xm2[, 2]
+}
+
+
+#Creamos 50 dataframes con el nombre dfi que contienen [x1, x3, x3, u, y]
+#definimos x1 y x3 como vectores de 100 observaciones con distribución uniforme [0,100].
+#x2 se define segun x2_corr, para estar altamente correlacionada con x1
+#u sigue una distribución normal con media 0 y varianza 1600
+#y = b0 + b1*x1 + b2*x2 +  b3*x3 + u
+for (i in 1:50) {
+  set.seed(i)
+  x1 <- runif(100, 0, 100)
+  x2 <- x2_corr(x1)
+  x3 <- runif(100, 0, 100)
+  u <- rnorm(100, 0, sqrt(1600))
+  y <- b0 + b1 * x1 + b2 * x2 +  b3 * x3 + u
+  nam <- paste('df', i, sep = '')
+  df <- data.frame(x1, x2, x3, u, y)
+  assign(nam, df)
+}
+
+rm(df)
+
+#6.
+#Hacemos una lista de todas las variables que comienzan con df en el Enviroment
+df_list <- lapply (ls(patt = '^df'), get)
+
+#Aplicamos la estimación de OLS a todos los df
+ols <- lapply(df_list, function(x) {
+  lm(y ~ x1 + x2 + x3, data = x)
+})
+
+#Extraemos los coeficientes y los exportamos en un excel
+coefficients <- sapply(ols, function(x)
+  x$coefficients)
+coefficients <- t(coefficients)
+colnames(coefficients) <- c('b0', 'b1', 'b2', 'b3')
+write.xlsx(coefficients, 'segunda_estimacion.xlsx', row.names = FALSE)
+
+rm(list = ls())
+
+#7.
+#Importamos el archivo generado anteriormente
+df <- read_excel('segunda_estimacion.xlsx')
+
+#Graficamos b1 contra b2 y b1 contra b3 (hay qu tunearle los índices)
+
+#hay dos versiones
+#plot(df$b1, df$b2)
+
+ggplot(df,
+       aes(x = df$b1, y = df$b2)) + geom_point()
+
+#Dejaron de ser MELI?
+
+#8. Que problema hay
+
+
+# Ejercicio 2 ----
