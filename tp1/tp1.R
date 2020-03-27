@@ -1,7 +1,8 @@
 # Configuración ----
 #Las líneas comentadas se deben correr si los paquetes no están instalados
 #install.packages('xlsx')
-#install.package('readxl')
+#install.packages('readxl')
+#install.packages('corrplot')
 library(xlsx)
 library(readxl)
 setwd('/home/augusto/udesa/econometria/tp1')
@@ -15,7 +16,7 @@ b2 <- 1
 b3 <- -1
 # Ejercicio 1 ----
 # 1.
-#Creamos la lista df_list con 50 dataframes dfi que contienen [x1, x3, x3, u, y]
+#Creamos la lista df_list con 50 dataframes que contienen [x1, x3, x3, u, y]
 #definimos x1, x2, x3 como vectores de 100 observaciones con distribución uniforme [0,100].
 #u sigue una distribución normal con media 0 y varianza 1600
 #y = b0 + b1*x1 + b2*x2 +  b3*x3 + u
@@ -27,8 +28,7 @@ df_list <- lapply(seq(1, 50), function(i) {
   x3 <- runif(100, 0, 100)
   u <- rnorm(100, 0, sqrt(1600))
   y <- b0 + b1 * x1 + b2 * x2 +  b3 * x3 + u
-  nam <- paste('df', i, sep = '')
-  assign(nam, data.frame(x1, x2, x3, u, y))
+  data.frame(x1, x2, x3, u, y)
 })
 
 #2.
@@ -81,7 +81,7 @@ x2_corr <- function(x1) {
   x2 <- xm2[, 2]
 }
 
-#Creamos la lista df_list_corr con 50 dataframes dfi que contienen [x1, x3, x3, u, y]
+#Creamos la lista df_list_corr con 50 dataframes que contienen [x1, x3, x3, u, y]
 #definimos x1 y x3 como vectores de 100 observaciones con distribución uniforme [0,100].
 #x2 se define segun x2_corr, para estar altamente correlacionada con x1
 #u sigue una distribución normal con media 0 y varianza 1600
@@ -93,9 +93,8 @@ df_list_corr <- lapply(seq(1, 50), function(i) {
   x3 <- runif(100, 0, 100)
   u <- rnorm(100, 0, sqrt(1600))
   y <- b0 + b1 * x1 + b2 * x2 +  b3 * x3 + u
-  nam <- paste('df', i, sep = '')
-  assign(nam, data.frame(x1, x2, x3, u, y))
-})
+  data.frame(x1, x2, x3, u, y)
+ })
 
 #6.
 #Estimamos el modelo y = β0 + β1 x1 + β2 x2 + β3 x3 + ui para todos los df_i contenidos en df_list_corr
