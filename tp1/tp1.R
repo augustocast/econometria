@@ -24,9 +24,9 @@ b3 <- -1
 df_list <- lapply(seq(1, 50), function(i) {
   set.seed(i)
   x1 <- runif(100, 0, 100)
-  x2 <- runif(100, 0, 100)
   x3 <- runif(100, 0, 100)
-  u <- rnorm(100, 0, sqrt(1600))
+  u <- rnorm(100, 0, 40)
+  x2 <- runif(100, 0, 100)
   y <- b0 + b1 * x1 + b2 * x2 +  b3 * x3 + u
   data.frame(x1, x2, x3, u, y)
 })
@@ -65,9 +65,16 @@ par(mfrow = c(1, 2))
 plot(coefficients$b1, coefficients$b2)
 plot(coefficients$b1, coefficients$b3)
 
-#5.
-x2_corr <- function(x1) {
-  #La función genera x2, altamente correlacionada con x1
+#Creamos la lista df_list_corr con 50 dataframes que contienen [x1, x3, x3, u, y]
+#definimos x1 y x3 como vectores de 100 observaciones con distribución uniforme [0,100].
+#x2 se define para estar altamente correlacionada con x1
+#u sigue una distribución normal con media 0 y varianza 1600
+#dfi <- df_list_corr[[i]]
+df_list_corr <- lapply(seq(1, 50), function(i) {
+  set.seed(i)
+  x1 <- runif(100, 0, 100)
+  x3 <- runif(100, 0, 100)
+  u <- rnorm(100, 0, 40)
   x2 <- scale(matrix(rnorm(100), ncol = 1))
   xs <- cbind(scale(x1), x2)
   c1 <- var(xs)
@@ -79,19 +86,6 @@ x2_corr <- function(x1) {
   chol2 <- chol(newc)
   xm2 <- newx %*% chol2 * sd(x1) + mean(x1)
   x2 <- xm2[, 2]
-}
-
-#Creamos la lista df_list_corr con 50 dataframes que contienen [x1, x3, x3, u, y]
-#definimos x1 y x3 como vectores de 100 observaciones con distribución uniforme [0,100].
-#x2 se define segun x2_corr, para estar altamente correlacionada con x1
-#u sigue una distribución normal con media 0 y varianza 1600
-#dfi <- df_list_corr[[i]]
-df_list_corr <- lapply(seq(1, 50), function(i) {
-  set.seed(i)
-  x1 <- runif(100, 0, 100)
-  x2 <- x2_corr(x1)
-  x3 <- runif(100, 0, 100)
-  u <- rnorm(100, 0, sqrt(1600))
   y <- b0 + b1 * x1 + b2 * x2 +  b3 * x3 + u
   data.frame(x1, x2, x3, u, y)
  })
